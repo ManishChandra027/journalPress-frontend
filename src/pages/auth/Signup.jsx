@@ -1,86 +1,145 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { useForm } from "react-hook-form";
-import { signupUser } from "../../services/authService";
-const Signup = () => {
-    const { register, handleSubmit } = useForm();
+import { useNavigate } from "react-router";
+import { BlogContext } from "../../context/BlogContext";
+import { getCurrentUser, signupUser } from "../../services/authService";
 
-    const handleSignUp = async (signupData) => {
+const SignupCard = () => {
+    const { register, handleSubmit } = useForm();
+    const [error, setError] = useState("");
+    const navigate = useNavigate();
+    const { setStatus, setUserData } = useContext(BlogContext);
+
+    const handleSignup = async (signupData) => {
+        setError("");
         try {
-            const response = await signupUser(signupData);
-            console.log(response);
-        } catch (error) {
-            console.log(error);
+            const session = await signupUser(signupData);
+            if (!session) throw new Error("Account creation failed");
+            const currentData = await getCurrentUser();
+            if (!currentData) throw new Error("Failed to fetch user data");
+            setStatus(true);
+            setUserData(currentData.data);
+            navigate("/");
+        } catch (err) {
+            setError(err.message);
+            console.log(err);
         }
     };
 
+    const inputClass =
+        "w-full bg-white border border-[#e0ddd8] text-[#111] placeholder-[#bbb] p-2.5 rounded-lg focus:outline-none focus:border-[#0891B2] transition-colors text-sm";
+    const labelClass = "text-xs text-[#888] block mb-1 font-medium";
+
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
-            <div className="w-full max-w-md bg-white p-8 rounded-xl shadow-md">
-                <h1 className="text-3xl font-bold text-center mb-6">Signup</h1>
+        <div className="flex justify-center items-center min-h-[80vh] bg-[#FAF9F6]">
+            <div className="bg-white border border-[#e8e6e1] p-8 rounded-2xl w-full max-w-sm shadow-sm">
+                <h1 className="text-xl font-semibold text-[#111] text-center mb-1">
+                    Create account
+                </h1>
+                <p className="text-xs text-[#999] text-center mb-6">
+                    Join the community
+                </p>
 
                 <form
-                    onSubmit={handleSubmit(handleSignUp)}
-                    className="space-y-4"
+                    className="flex flex-col gap-4"
+                    onSubmit={handleSubmit(handleSignup)}
                 >
                     <div>
-                        <label className="block mb-1 font-medium">
-                            Full Name
+                        <label htmlFor="username" className={labelClass}>
+                            Username
                         </label>
-
                         <input
                             type="text"
-                            {...register("fullName")}
-                            placeholder="Enter your name"
-                            className="w-full border px-4 py-2 rounded-lg outline-none focus:ring-2 focus:ring-black"
-                        />
-                    </div>
-
-                    <div>
-                        <label className="block mb-1 font-medium">Email</label>
-
-                        <input
-                            type="email"
-                            {...register("email")}
-                            placeholder="Enter your email"
-                            className="w-full border px-4 py-2 rounded-lg outline-none focus:ring-2 focus:ring-black"
-                        />
-                    </div>
-                    <div>
-                        <label className="block mb-1 font-medium">
-                            username
-                        </label>
-
-                        <input
-                            type="text"
-                            {...register("username")}
+                            id="username"
                             placeholder="Enter your username"
-                            className="w-full border px-4 py-2 rounded-lg outline-none focus:ring-2 focus:ring-black"
+                            className={inputClass}
+                            {...register("username", {
+                                required: "username is required",
+                                minLength: {
+                                    value: 3,
+                                    message: "Minimum 3 characters",
+                                },
+                            })}
+                        />
+                    </div>
+                    <div>
+                        <label htmlFor="fullName" className={labelClass}>
+                            Name
+                        </label>
+                        <input
+                            type="text"
+                            id="fullName"
+                            placeholder="Enter your Name"
+                            className={inputClass}
+                            {...register("fullName", {
+                                required: "Name is required",
+                                minLength: {
+                                    value: 3,
+                                    message: "Minimum 3 characters",
+                                },
+                            })}
+                        />
+                    </div>
+                    <div>
+                        <label htmlFor="email" className={labelClass}>
+                            Email
+                        </label>
+                        <input
+                            id="email"
+                            type="email"
+                            placeholder="Enter your email"
+                            className={inputClass}
+                            {...register("email", {
+                                required: "Email is required",
+                                pattern: {
+                                    value: /\S+@\S+\.\S+/,
+                                    message: "Invalid email",
+                                },
+                            })}
                         />
                     </div>
 
                     <div>
-                        <label className="block mb-1 font-medium">
+                        <label htmlFor="password" className={labelClass}>
                             Password
                         </label>
-
                         <input
+                            id="password"
                             type="password"
-                            {...register("password")}
                             placeholder="Enter password"
-                            className="w-full border px-4 py-2 rounded-lg outline-none focus:ring-2 focus:ring-black"
+                            className={inputClass}
+                            {...register("password", {
+                                required: "Password is required",
+                                minLength: {
+                                    value: 8,
+                                    message: "Minimum 8 characters",
+                                },
+                            })}
                         />
                     </div>
+
+                    {error && <p className="text-red-500 text-xs">{error}</p>}
 
                     <button
                         type="submit"
-                        className="w-full bg-black text-white py-2 rounded-lg hover:bg-gray-800 transition"
+                        className="w-full bg-[#111] text-white text-sm font-medium py-2.5 rounded-lg hover:bg-[#333] transition-colors mt-1 cursor-pointer"
                     >
-                        Create Account
+                        Sign Up
                     </button>
                 </form>
+
+                <p className="text-xs text-[#999] text-center mt-5">
+                    Already have an account?{" "}
+                    <span
+                        onClick={() => navigate("/login")}
+                        className="text-[#0891B2] cursor-pointer hover:underline font-medium"
+                    >
+                        Login
+                    </span>
+                </p>
             </div>
         </div>
     );
 };
 
-export default Signup;
+export default SignupCard;

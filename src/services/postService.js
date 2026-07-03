@@ -50,4 +50,7 @@ export const toggleBookmarkBlog = (blogId) =>
     apiHandler(() => api.post(`/blogs/${blogId}/bookmark`));
 
 export const getBlogBySlug = (slug) =>
-    apiHandler(() => api.post(`/blogs/slug/${slug}`));
+    apiHandler(() => api.get(`/blogs/slug/${slug}`));
+
+export const getFeaturedPost = () =>
+    apiHandler(() => api.get(`/blogs/featured`));
