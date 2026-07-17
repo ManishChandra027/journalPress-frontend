@@ -1,9 +1,22 @@
-import React from "react";
+import React, { useState } from "react";
 import { BadgeCheck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { requestEmailVerification } from "../../services/authService";
 const ProfileCard = ({ profileData, setIsEdit, isAuthor }) => {
+    const [msg,setMsg]=useState("");
     // console.log(profileData);
     const navigate=useNavigate();
+
+    const handleVerifyEmail=async ()=>{
+       const res= await requestEmailVerification();
+
+       if(res){
+        setMsg(res.message)
+       }
+
+    }
+
+    
 
     return (
         <div className="max-w-xs w-full mx-auto mt-2 p-6  flex flex-col items-center text-center ">
@@ -22,11 +35,11 @@ const ProfileCard = ({ profileData, setIsEdit, isAuthor }) => {
                 {profileData.fullName}
                 <span >
                     {" "}
-                    {profileData.isVerified ? (
-                        <BadgeCheck strokeWidth={3} />
-                    ) : null}
                 </span>
             </h2>
+                    {profileData.isVerified ? (
+                        <BadgeCheck strokeWidth={3} />
+                    ) : (msg?msg:<button onClick={handleVerifyEmail}>verify email</button>)}
             <h3 className="mt-4 text-base font-semibold text-[#111]">
                 @{profileData.username}
             </h3>

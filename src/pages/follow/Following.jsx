@@ -57,9 +57,7 @@ const Following = () => {
                     {/* Left */}
                     <div
                         className="flex items-center gap-3 cursor-pointer"
-                        onClick={() =>
-                            navigate(`/${following.username}`)
-                        }
+                        onClick={() => navigate(`/${following.username}`)}
                     >
                         {following?.avatar?.url ? (
                             <img
@@ -69,9 +67,7 @@ const Following = () => {
                             />
                         ) : (
                             <div className="w-10 h-10 rounded-full bg-[#0891B2] text-white text-sm font-medium flex items-center justify-center">
-                                {following?.fullName
-                                    ?.charAt(0)
-                                    ?.toUpperCase()}
+                                {following?.fullName?.charAt(0)?.toUpperCase()}
                             </div>
                         )}
 

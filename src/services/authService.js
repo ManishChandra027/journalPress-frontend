@@ -39,5 +39,5 @@ export const changePassword = (passwordData) =>
 export const requestEmailVerification = () =>
     apiHandler(() => api.post("/auth/request-email-verification"));
 
-export const changeEmailRequest = (emailData) =>
-    apiHandler(() => api.post("/auth/change-email-request", emailData));
+// export const changeEmailRequest = (emailData) =>
+//     apiHandler(() => api.post("/auth/change-email-request", emailData));

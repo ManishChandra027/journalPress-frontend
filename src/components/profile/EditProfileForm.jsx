@@ -79,14 +79,14 @@ const EditProfileForm = ({ profileData, setIsEdit }) => {
                     />
                 </div>
 
-                <div className="w-full">
-                    <label className="block mb-1">Email</label>
+               {profileData.isVerified?null: <div className="w-full">
+                    <label className="block mb-1">Email</label> 
                     <input
                         type="email"
                         className="w-full"
                         {...register("email")}
                     />
-                </div>
+                </div>}
 
                 <div className="w-full">
                     <label className="block mb-1">Username</label>
@@ -105,6 +105,7 @@ const EditProfileForm = ({ profileData, setIsEdit }) => {
                         update Password
                     </button>
                 </div>
+                
                 <textarea
                     placeholder="Update your bio..."
                     className="w-full bg-[#FAF9F6] border border-[#e0ddd8] text-[#111] text-sm p-2.5 rounded-lg focus:outline-none focus:border-[#0891B2] resize-none"

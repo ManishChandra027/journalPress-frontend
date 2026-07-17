@@ -14,6 +14,7 @@ import Followrs from "../pages/follow/Followrs";
 import ChangePassword from "../pages/auth/ChangePassword";
 import ForgetPassword from "../pages/auth/ForgetPassword";
 import { ResetPassword } from "../pages/auth/ResetPassword";
+import VerifyEmail from "../pages/auth/VerifyEmail";
 
 const appRouter = createBrowserRouter([
     {
@@ -75,6 +76,10 @@ const appRouter = createBrowserRouter([
             {
                 path: "/reset-password/:token",
                 element: < ResetPassword/>,
+            },
+            {
+                path: "/verify-email/:token",
+                element: < VerifyEmail/>,
             },
         ],
     },
