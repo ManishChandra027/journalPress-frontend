@@ -1,15 +1,26 @@
-import React, { useContext, useEffect, useState } from "react";
-
-import { useNavigate, useParams } from "react-router-dom";
+import { useState } from "react";
 import EditProfileForm from "./EditProfileForm";
 import ProfileCard from "./ProfileCard";
 
-const Profile = ({ profileData,isAuthor }) => {
-    const [isEdit, setIsEdit] = useState(false);
-    return isEdit ? (
-        <EditProfileForm profileData={profileData} setIsEdit={setIsEdit} isAuthor={isAuthor}/>
-    ) : (
-        <ProfileCard profileData={profileData} setIsEdit={setIsEdit} isAuthor={isAuthor} />
+const Profile = ({ profileData, isAuthor, onProfileUpdated }) => {
+    const [isEditing, setIsEditing] = useState(false);
+
+    if (isEditing) {
+        return (
+            <EditProfileForm
+                profileData={profileData}
+                setIsEdit={setIsEditing}
+                onProfileUpdated={onProfileUpdated}
+            />
+        );
+    }
+
+    return (
+        <ProfileCard
+            profileData={profileData}
+            setIsEdit={setIsEditing}
+            isAuthor={isAuthor}
+        />
     );
 };
 

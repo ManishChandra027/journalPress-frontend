@@ -1,29 +1,32 @@
-import React, { useContext } from "react";
+﻿import { useContext } from "react";
 import { useNavigate } from "react-router";
-import { BlogContext } from "../../context/BlogContext";
+import { PostContext } from "../../context/PostContext";
 import { logoutUser } from "../../services/authService";
-
-
+import { toast } from "sonner";
 const LogoutBtn = () => {
-  const navigate = useNavigate();
-  const { setStatus, setUserData } = useContext(BlogContext);
+    const navigate = useNavigate();
+    const { setStatus, setUserData } = useContext(PostContext);
 
-  const handleLogout = async () => {
-    const isLogout = await logoutUser();
-    if (!isLogout) throw new Error("Failed to Logout");
-    setStatus(false);
-    setUserData(null);
-    navigate("/");
-  };
+    const handleLogout = async () => {
+        try {
+            await logoutUser();
+            setStatus(false);
+            setUserData(null);
+            toast.success("Logout successful!");
+            navigate("/");
+        } catch (error) {
+            toast.error(error.message);
+        }
+    };
 
-  return (
-    <button
-      onClick={handleLogout}
-      className="px-3 py-1.5 text-sm rounded-lg border border-[#ddd] text-[#666] hover:border-[#111] hover:text-[#111] transition-colors cursor-pointer bg-transparent"
-    >
-      Logout
-    </button>
-  );
+    return (
+        <button
+            onClick={handleLogout}
+            className="px-3 py-1.5 text-sm rounded-lg border border-[#ddd] text-[#666] hover:border-[#111] hover:text-[#111] transition-colors cursor-pointer bg-transparent"
+        >
+            Logout
+        </button>
+    );
 };
 
 export default LogoutBtn;

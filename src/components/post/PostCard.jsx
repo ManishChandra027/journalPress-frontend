@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Heart, Eye, Timer } from "lucide-react";
+import Avatar from "../ui/Avatar";
+import FormattedDate from "../ui/FormattedDate";
+
 const PostCard = ({ postData }) => {
-    
     return (
         <Link to={`/post/${postData.slug}`}>
             <div className="bg-white border border-[#e8e6e1] rounded-2xl overflow-hidden hover:shadow-md transition-all duration-200 cursor-pointer">
@@ -23,25 +24,13 @@ const PostCard = ({ postData }) => {
 
                     <div className="flex items-center justify-between py-2">
                         <div className="flex items-center gap-2">
-                            {postData?.author?.avatar ? (
-                                <img
-                                    src={postData?.author.avatar?.url}
-                                    className="w-6 h-6 rounded-full object-cover"
-                                    alt={postData?.author?.fullName}
-                                />
-                            ) : (
-                                <div className="w-5 h-5 rounded-full bg-[#0891B2] text-white text-[10px] font-medium flex items-center justify-center">
-                                    {postData?.author?.fullName
-                                        ?.charAt(0)
-                                        .toUpperCase()}
-                                </div>
-                            )}
+                            <Avatar user={postData?.author} size="sm" />
 
                             <span className=" text-xs text-[#999]">
                                 {postData?.author?.fullName}
                             </span>
                         </div>
-                        
+
                         <div className="flex items-start  gap-4 mt-3 text-xs text-[#777]">
                             <span className="flex items-start gap-1">
                                 <Eye
@@ -52,7 +41,7 @@ const PostCard = ({ postData }) => {
                                 {postData?.views}
                             </span>
 
-                            <span className="flex items-start gap-1" >
+                            <span className="flex items-start gap-1">
                                 <Heart
                                     size={14}
                                     strokeWidth={2.5}
@@ -71,22 +60,15 @@ const PostCard = ({ postData }) => {
                             </span>
                         </div>
                     </div>
-                        {postData?.publishedAt?(<span className="text-xs text-[#999]">
-                            Published:{" "}
-                            <span>
-                                {new Date(
-                                    postData.publishedAt
-
-                                ).toLocaleDateString("en-IN", {
-                                    timeZone: "Asia/Kolkata",
-                                    day: "numeric",
-                                    month: "short",
-                                    year: "2-digit",
-                                })}
-                            </span>
-                        </span>):<span className="text-xs text-[#f32b2b]">
-                            draft
-                            </span>}
+                    {postData?.publishedAt ? (
+                        
+                        <FormattedDate
+                                date={postData?.publishedAt}
+                                label="Published:"
+                            />
+                    ) : (
+                        <span className="text-xs text-[#f32b2b]">draft</span>
+                    )}
                 </div>
             </div>
         </Link>

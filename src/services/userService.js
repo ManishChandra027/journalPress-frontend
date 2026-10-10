@@ -1,4 +1,4 @@
-import api from "../api";
+﻿import api from "../api";
 import { apiHandler } from "../utils/apiHandler";
 
 export const getCurrentUserProfile = () =>
@@ -7,12 +7,9 @@ export const getCurrentUserProfile = () =>
 export const updateAccountDetails = (accountData) =>
     apiHandler(() => api.patch("/users/me", accountData));
 
-export const updateAvatar = (avatarData) =>
-    apiHandler(() => api.patch("/users/me/avatar", avatarData));
-
-export const getUserPublishedBlogs = (username, queries) =>
+export const getUserPublishedPosts = (username, queries) =>
     apiHandler(() =>
-        api.get(`/users/${username}/blogs`, {
+        api.get(`/users/${username}/posts`, {
             params: queries,
         })
     );

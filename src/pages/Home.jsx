@@ -1,26 +1,29 @@
-import React, { useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { getFeaturedPost, getPublishedBlogs, toggleLikeBlog } from "../services/postService";
-import PostCard from "../components/blog/PostCard";
 import { Heart, Eye, Timer } from "lucide-react";
-import { useContext } from "react";
-import { BlogContext } from "../context/BlogContext";
+import { getFeaturedPost, getPublishedPosts } from "../services/postService";
+import PostCard from "../components/post/PostCard";
+import HoneSpinner from "../components/ui/HoneSpinner";
+import FormattedDate from "../components/ui/FormattedDate";
+import Avatar from "../components/ui/Avatar";
 
 const Home = () => {
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const [featuredPost, setFeaturedPost] = useState(null);
-    //  const { userData } = useContext(BlogContext);
-     
+
     const navigate = useNavigate();
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const res = await getPublishedBlogs();
-                if (!res) return;
-                setPosts(res.data.blogs);
+                const res = await getPublishedPosts();
+
+                setPosts(res.data.posts);
             } catch (err) {
-                console.error(err);
+                setError(
+                    err.message || "An error occurred while fetching posts."
+                );
             } finally {
                 setLoading(false);
             }
@@ -36,45 +39,24 @@ const Home = () => {
                     setFeaturedPost(res.data);
                 }
             } catch (err) {
-                console.error(err);
+                console.error("Error fetching featured post:", err);
             }
         };
         fetchFeatureData();
     }, []);
-    const normalPosts = posts.filter(
-        (post) => post?._id?.toString() !== featuredPost?._id?.toString()
-    );
 
-   
-    if (loading) {
+    const normalPosts = posts.filter((post) => post._id !== featuredPost?._id);
+
+    if (!loading && error) {
         return (
-            <div className="py-10">
-                <div className="h-5 bg-[#e8e6e1] w-24 rounded mb-6 animate-pulse" />
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-                    <div className="bg-[#e8e6e1] rounded-2xl h-56 animate-pulse" />
-                    <div className="flex flex-col gap-3">
-                        <div className="h-4 bg-[#e8e6e1] w-1/2 rounded animate-pulse" />
-                        <div className="h-6 bg-[#e8e6e1] w-full rounded animate-pulse" />
-                        <div className="h-4 bg-[#e8e6e1] w-full rounded animate-pulse" />
-                        <div className="h-4 bg-[#e8e6e1] w-3/4 rounded animate-pulse" />
-                    </div>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                    {[...Array(3)].map((_, i) => (
-                        <div
-                            key={i}
-                            className="bg-white border border-[#e8e6e1] rounded-2xl overflow-hidden animate-pulse"
-                        >
-                            <div className="h-44 bg-[#e8e6e1]" />
-                            <div className="p-4 space-y-2">
-                                <div className="h-3 bg-[#e8e6e1] w-3/4 rounded" />
-                                <div className="h-3 bg-[#e8e6e1] w-1/2 rounded" />
-                            </div>
-                        </div>
-                    ))}
-                </div>
+            <div className="min-h-[60vh] flex items-center justify-center">
+                <p className="text-[#bbb] text-sm">{error}</p>
             </div>
         );
+    }
+
+    if (loading) {
+        return <HoneSpinner />;
     }
 
     if (posts.length === 0) {
@@ -128,19 +110,11 @@ const Home = () => {
                             className="w-fit"
                         >
                             <div className="flex items-center gap-2 mb-4">
-                                {featuredPost?.author?.avatar?.url ? (
-                                    <img
-                                        src={featuredPost?.author?.avatar?.url}
-                                        className="w-6 h-6 rounded-full object-cover"
-                                        alt={featuredPost?.author?.fullName}
-                                    />
-                                ) : (
-                                    <div className="w-6 h-6 rounded-full bg-[#0891B2] text-white text-[10px] font-medium flex items-center justify-center">
-                                        {featuredPost?.author?.fullName
-                                            ?.charAt(0)
-                                            ?.toUpperCase()}
-                                    </div>
-                                )}
+                                <Avatar
+                                    user={featuredPost?.author}
+                                    size="sm"
+                                    className="w-6 h-6"
+                                />
 
                                 <span className="text-xs text-[#999] hover:text-black hover:font-semibold transition-all">
                                     {featuredPost?.author?.fullName}
@@ -152,20 +126,13 @@ const Home = () => {
                         <div className="flex justify-between items-end mt-auto">
                             <span className="text-sm font-medium text-[#333333] inline-flex items-center gap-1 group-hover:text-[#0891B2] transition-colors ">
                                 Read Article
-                                <span className="text-xs">↗</span>
+                                <span className="text-xs">→</span>
                             </span>
 
-                            <span className="text-xs text-[#999]">
-                                Published:{" "}
-                                {new Date(
-                                    featuredPost?.publishedAt
-                                ).toLocaleDateString("en-IN", {
-                                    timeZone: "Asia/Kolkata",
-                                    day: "numeric",
-                                    month: "short",
-                                    year: "2-digit",
-                                })}
-                            </span>
+                            <FormattedDate
+                                date={featuredPost?.publishedAt}
+                                label="Published:"
+                            />
                         </div>
 
                         {/* Stats */}
@@ -179,7 +146,7 @@ const Home = () => {
                                 {featuredPost?.views}
                             </span>
 
-                            <span className="flex items-center gap-1" >
+                            <span className="flex items-center gap-1">
                                 <Heart
                                     size={14}
                                     strokeWidth={2.5}
@@ -202,13 +169,12 @@ const Home = () => {
             )}
 
             {/* Rest posts grid */}
-            {normalPosts && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                    {normalPosts.map((post) => (
-                        <PostCard key={post._id} postData={post} />
-                    ))}
-                </div>
-            )}
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                {normalPosts.map((post) => (
+                    <PostCard key={post._id} postData={post} />
+                ))}
+            </div>
         </div>
     );
 };

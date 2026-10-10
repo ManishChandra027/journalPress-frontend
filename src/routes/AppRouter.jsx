@@ -1,20 +1,21 @@
-import { createBrowserRouter } from "react-router-dom";
+﻿import { createBrowserRouter } from "react-router-dom";
 import App from "../App";
 import Home from "../pages/Home";
 import Login from "../pages/auth/Login";
 import Signup from "../pages/auth/Signup";
-import Post from "../pages/blog/Post";
-import AddPost from "../pages/blog/AddPost";
-import MyPost from "../pages/blog/MyPost";
-import EditPost from "../pages/blog/EditPost";
+import Post from "../pages/post/Post";
+import AddPost from "../pages/post/AddPost";
+import MyPost from "../pages/post/MyPost";
+import EditPost from "../pages/post/EditPost";
 import PublicProfile from "../pages/profile/PublicProfile";
 import MyProfile from "../pages/profile/MyProfile";
-import Following from "../pages/follow/Following";
-import Followrs from "../pages/follow/Followrs";
+
 import ChangePassword from "../pages/auth/ChangePassword";
 import ForgetPassword from "../pages/auth/ForgetPassword";
 import { ResetPassword } from "../pages/auth/ResetPassword";
 import VerifyEmail from "../pages/auth/VerifyEmail";
+import Following from "../pages/follow/Following";
+import Followers from "../pages/follow/Followers";
 
 const appRouter = createBrowserRouter([
     {
@@ -50,20 +51,8 @@ const appRouter = createBrowserRouter([
                 element: <EditPost />,
             },
             {
-                path: "/:username",
-                element: <PublicProfile />,
-            },
-            {
                 path: "/profile/me",
                 element: <MyProfile />,
-            },
-            {
-                path: "/:username/following",
-                element: <Following />,
-            },
-            {
-                path: "/:username/followers",
-                element: <Followrs />,
             },
             {
                 path: "/update-password",
@@ -71,15 +60,27 @@ const appRouter = createBrowserRouter([
             },
             {
                 path: "/forget-password",
-                element: < ForgetPassword/>,
+                element: <ForgetPassword />,
             },
             {
                 path: "/reset-password/:token",
-                element: < ResetPassword/>,
+                element: <ResetPassword />,
             },
             {
                 path: "/verify-email/:token",
-                element: < VerifyEmail/>,
+                element: <VerifyEmail />,
+            },
+            {
+                path: "/:username/following",
+                element: < Following/>,
+            },
+            {
+                path: "/:username/followers",
+                element: <Followers />,
+            },
+            {
+                path: "/:username",
+                element: <PublicProfile />,
             },
         ],
     },

@@ -1,27 +1,30 @@
-import React, { useContext, useEffect, useState } from "react";
+﻿import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-
 import { useNavigate } from "react-router-dom";
-import { BlogContext } from "../../context/BlogContext";
-import TextEditor from "./editor/TextEditor";
-import { createBlog, updateBlog } from "../../services/postService";
 
+import TextEditor from "./editor/TextEditor";
+import { createPost, updatePost } from "../../services/postService";
+import { toast } from "sonner";
 const PostForm = ({ existingPostData }) => {
-    // const [tag, setTag] = useState("");
-    // const [tags, setTags] = useState([]);
-    const { register, handleSubmit, reset, control, getValues } = useForm({
+    const {
+        register,
+        handleSubmit,
+        reset,
+        control,
+        formState: { errors },
+    } = useForm({
         defaultValues: {
             title: existingPostData?.title || "",
             excerpt: existingPostData?.excerpt || "",
             content: existingPostData?.content || "",
-            status: existingPostData?.status || "",
-            category: existingPostData?.category || "",
-          
+            status: existingPostData?.status || "published",
+            category: existingPostData?.category || "general",
         },
     });
-    // console.log(existingPostData)
+
     const navigate = useNavigate();
-    const { userData } = useContext(BlogContext);
+    const [error, setError] = useState("");
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
         if (existingPostData) {
@@ -29,45 +32,49 @@ const PostForm = ({ existingPostData }) => {
                 title: existingPostData.title || "",
                 excerpt: existingPostData.excerpt || "",
                 content: existingPostData.content || "",
-                status: existingPostData?.status || "",
-                category: existingPostData?.category || "",
-                
+                status: existingPostData?.status || "draft",
+                category: existingPostData?.category || "general",
             });
         }
     }, [existingPostData, reset]);
 
     const handleSubmitForm = async (postData) => {
         const formData = new FormData();
+        setError("");
+        setIsSubmitting(true);
         try {
-            if (existingPostData) {
-                formData.append("title", postData.title);
-                formData.append("excerpt", postData.excerpt);
-                formData.append("status", postData.status);
-                formData.append("content", postData.content);
+            // if (!postData.title?.trim() || !postData.content?.trim()) {
+            //     throw new Error("Title and content are required.");
+            // }
 
-                if (postData.coverImage.length > 0) {
-                    formData.append("coverImage", postData.coverImage[0]);
-                }
-                await updateBlog( formData,existingPostData._id);
-                navigate("/");
-            } else {
-                formData.append("title", postData.title);
-                formData.append("excerpt", postData.excerpt);
-                formData.append("status", postData.status);
-                formData.append("content", postData.content);
+            formData.append("title", postData.title.trim());
+            formData.append("excerpt", postData.excerpt?.trim() || "");
+            formData.append("status", postData.status || "draft");
+            formData.append("category", postData.category || "general");
+            formData.append("content", postData.content);
+
+            if (postData.coverImage?.length > 0) {
                 formData.append("coverImage", postData.coverImage[0]);
-                await createBlog(formData);
-                navigate("/");
             }
+
+         console.log("postData:", postData);
+
+for (const [key, value] of formData.entries()) {
+    console.log(key, value);
+}
+
+            if (existingPostData) {
+                await updatePost(formData, existingPostData._id);
+            } else {
+                await createPost(formData);
+                
+            }
+            toast.success("post created successfully");
+            navigate("/");
         } catch (err) {
-            console.error(err);
-            // alert("Something went wrong");
-        }
-    };
-    const tag = () => {
-        if (e.key === "Enter") {
-            // current tag ko tags array me add karo
-            // input clear karo
+            setError(err.message || "Unable to save your post right now.");
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -78,7 +85,6 @@ const PostForm = ({ existingPostData }) => {
     return (
         <div className="min-h-[80vh] bg-[#FAF9F6] py-12 px-4">
             <div className="max-w-6xl mx-auto">
-                {/* Page heading */}
                 <div className="mb-8">
                     <p className="text-xs font-semibold text-[#999] uppercase tracking-widest mb-1">
                         {existingPostData ? "Editing" : "New Post"}
@@ -91,22 +97,36 @@ const PostForm = ({ existingPostData }) => {
                 </div>
 
                 <form onSubmit={handleSubmit(handleSubmitForm)}>
-                    {/* Mobile: flex-col | Desktop: flex-row */}
                     <div className="flex flex-col lg:flex-row gap-6 items-start justify-between">
-                        {/* ── LEFT PANEL (mobile: full width, desktop: fixed 288px) ── */}
-                        <div className="w-full lg:w-92 lg:shrink-0  bg-white border border-[#e8e6e1] rounded-2xl p-6 shadow-sm flex flex-col gap-5">
-                            {/* Title */}
+                        <div className="w-full lg:w-92 lg:shrink-0 bg-white border border-[#e8e6e1] rounded-2xl p-6 shadow-sm flex flex-col gap-5">
+                            {error && (
+                                <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-600">
+                                    {error}
+                                </div>
+                            )}
+
                             <div>
                                 <label className={labelClass}>Title</label>
                                 <input
                                     type="text"
                                     placeholder="Give your post a title..."
                                     className={inputClass}
-                                    {...register("title", { required: true })}
+                                    {...register("title", {
+                                        required: "Title is required",
+                                        minLength: {
+                                            value: 5,
+                                            message:
+                                                "Title must be at least 5 characters",
+                                        },
+                                    })}
                                 />
+                                {errors.title && (
+                                    <p className="text-sm text-red-500 mt-1">
+                                        {errors.title.message}
+                                    </p>
+                                )}
                             </div>
 
-                            {/* excerpt */}
                             <div>
                                 <label className={labelClass}>excerpt</label>
                                 <textarea
@@ -116,18 +136,24 @@ const PostForm = ({ existingPostData }) => {
                                     {...register("excerpt")}
                                 />
                             </div>
-                            {/* status */}
+
                             <div>
-                                <label className={labelClass}>ststus</label>
-                                <select {...register("status")}>
+                                <label className={labelClass}>Status</label>
+                                <select
+                                    className={`${inputClass} pr-8 appearance-none`}
+                                    {...register("status")}
+                                >
                                     <option value="draft">Draft</option>
                                     <option value="published">Published</option>
                                 </select>
                             </div>
-                            {/* Category */}
+
                             <div>
-                                <label className={labelClass}>category</label>
-                                <select {...register("category")}>
+                                <label className={labelClass}>Category</label>
+                                <select
+                                    className={`${inputClass} pr-8 appearance-none`}
+                                    {...register("category")}
+                                >
                                     <option value="technology">
                                         technology
                                     </option>
@@ -137,24 +163,14 @@ const PostForm = ({ existingPostData }) => {
                                     <option value="education">education</option>
                                     <option value="health">health</option>
                                     <option value="business">business</option>
-                                    <option value="entertainment ">
-                                        entertainment{" "}
+                                    <option value="entertainment">
+                                        entertainment
                                     </option>
-                                    <option value="sports ">sports </option>
-                                    <option value="general ">general </option>
+                                    <option value="sports">sports</option>
+                                    <option value="general">general</option>
                                 </select>
                             </div>
-                            {/* tags */}
-                            {/* <div>
-                                <input 
-                                    
-                                    type="text"
-                                     className={inputClass}
-                                    placeholder="Type a tag and press Enter"
-                                />
-                            </div> */}
 
-                            {/* Cover image */}
                             <div>
                                 <label className={labelClass}>
                                     Cover Image
@@ -169,22 +185,32 @@ const PostForm = ({ existingPostData }) => {
 
                             <button
                                 type="submit"
-                                className="w-full py-2.5 bg-[#111] text-white text-sm font-medium rounded-lg hover:bg-[#333] transition-colors cursor-pointer mt-auto"
+                                className="w-full py-2.5 bg-[#111] text-white text-sm font-medium rounded-lg hover:bg-[#333] transition-colors cursor-pointer mt-auto disabled:opacity-60"
+                                disabled={isSubmitting}
                             >
-                                {existingPostData
-                                    ? "Update Post"
-                                    : "Publish Post"}
+                                {isSubmitting
+                                    ? existingPostData
+                                        ? "Updating..."
+                                        : "Publishing..."
+                                    : existingPostData
+                                      ? "Update Post"
+                                      : "Publish Post"}
                             </button>
                         </div>
 
-                        {/* ── RIGHT PANEL (mobile: full width, desktop: flex-1) ── */}
                         <div className="w-full max-w-2xl bg-white border border-[#e8e6e1] rounded-2xl p-6 shadow-sm">
                             <label className={labelClass}>Content</label>
                             <div className="rounded-lg overflow-hidden border border-[#e0ddd8] focus-within:border-[#0891B2] transition-colors mt-1">
                                 <TextEditor
                                     control={control}
                                     name="content"
-                                    defaultValue={getValues("content")}
+                                    rules={{
+                                        validate: (value) =>
+                                            value
+                                                ?.replace(/<[^>]*>/g, "")
+                                                .trim().length > 0 ||
+                                            "Content is required",
+                                    }}
                                 />
                             </div>
                         </div>

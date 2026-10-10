@@ -1,17 +1,17 @@
-import React, { useState } from "react";
-import { BlogContext } from "./BlogContext";
+﻿import { useState } from "react";
+import { PostContext } from "./PostContext";
 
-const BlogProvider = ({ children }) => {
+const PostProvider = ({ children }) => {
     const [status, setStatus] = useState(false);
     const [userData, setUserData] = useState(null);
 
     return (
-        <BlogContext.Provider
+        <PostContext.Provider
             value={{ status, userData, setStatus, setUserData }}
         >
             {children}
-        </BlogContext.Provider>
+        </PostContext.Provider>
     );
 };
 
-export default BlogProvider;
+export default PostProvider;

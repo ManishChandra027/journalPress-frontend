@@ -1,36 +1,41 @@
-import React, { useState, useContext } from "react";
+﻿import { useState, useContext } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
-import { BlogContext } from "../../context/BlogContext";
+import { PostContext } from "../../context/PostContext";
 import { getCurrentUser, loginUser } from "../../services/authService";
-
+import { toast } from "sonner";
+import FormField, { inputClass } from "../../components/ui/FormField";
 const LoginCard = () => {
     const { register, handleSubmit } = useForm();
     const [error, setError] = useState("");
     const navigate = useNavigate();
-    const { setStatus, setUserData } = useContext(BlogContext);
+    const { setStatus, setUserData } = useContext(PostContext);
 
     const handleLogin = async (loginData) => {
         setError("");
         try {
-            if (!loginData?.username && !loginData?.email)
+            if (!loginData?.username && !loginData?.email) {
                 throw new Error("Please enter a username or email.");
+            }
+
             const session = await loginUser(loginData);
-            if (!session) throw new Error("Account Login failed");
+            if (!session) {
+                throw new Error("Login failed. Please try again.");
+            }
+
             const currentData = await getCurrentUser();
-            if (!currentData)
-                throw new Error("Failed to Fetch current Account");
+            if (!currentData) {
+                throw new Error("Unable to load your account right now.");
+            }
+
             setStatus(true);
             setUserData(currentData.data);
+             toast.success("Login successful!");
             navigate("/");
         } catch (err) {
-            setError(err.message);
+            setError(err.message || "Unable to sign in. Please try again.");
         }
     };
-
-    const inputClass =
-        "w-full bg-white border border-[#e0ddd8] text-[#111] placeholder-[#bbb] p-2.5 rounded-lg focus:outline-none focus:border-[#6d28d9] transition-colors text-sm";
-    const labelClass = "text-xs text-[#888] block mb-1 font-medium";
 
     return (
         <div className="flex justify-center items-center min-h-[80vh] bg-[#FAF9F6]">
@@ -46,10 +51,7 @@ const LoginCard = () => {
                     className="flex flex-col gap-4"
                     onSubmit={handleSubmit(handleLogin)}
                 >
-                    <div>
-                        <label htmlFor="email" className={labelClass}>
-                            Email
-                        </label>
+                    <FormField label="Email">
                         <input
                             id="email"
                             type="email"
@@ -62,11 +64,8 @@ const LoginCard = () => {
                                 },
                             })}
                         />
-                    </div>
-                    <div>
-                        <label htmlFor="username" className={labelClass}>
-                            Username
-                        </label>
+                    </FormField>
+                    <FormField label="Username">
                         <input
                             id="username"
                             type="text"
@@ -74,11 +73,8 @@ const LoginCard = () => {
                             className={inputClass}
                             {...register("username", {})}
                         />
-                    </div>
-                    <div>
-                        <label htmlFor="password" className={labelClass}>
-                            Password
-                        </label>
+                    </FormField>
+                    <FormField label="Password">
                         <input
                             id="password"
                             type="password"
@@ -92,7 +88,7 @@ const LoginCard = () => {
                                 },
                             })}
                         />
-                    </div>
+                    </FormField>
 
                     {error && <p className="text-red-500 text-xs">{error}</p>}
 
@@ -114,7 +110,6 @@ const LoginCard = () => {
                     </span>
                 </p>
                 <p className="text-xs text-[#999] text-center mt-5">
-                    
                     <span
                         onClick={() => navigate("/forget-password")}
                         className="text-[#0891B2] cursor-pointer hover:underline font-medium"

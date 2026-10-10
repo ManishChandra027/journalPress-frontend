@@ -1,59 +1,97 @@
-import React, { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { changePassword } from "../../services/authService";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import { updateAccountDetails } from "../../services/userService";
+import FormField, { inputClass } from "../ui/FormField";
 
-const EditProfileForm = ({ profileData, setIsEdit }) => {
-    const { register, handleSubmit, reset } = useForm({
-        defaultValues: { bio: "", email: "", fullName: "", username: "" },
+const EditProfileForm = ({ profileData, setIsEdit, onProfileUpdated }) => {
+    const navigate = useNavigate();
+    const [submitError, setSubmitError] = useState("");
+    const {
+        register,
+        handleSubmit,
+        reset,
+        formState: { isSubmitting },
+    } = useForm({
+        defaultValues: {
+            bio: "",
+            email: "",
+            fullName: "",
+            username: "",
+        },
     });
 
-
     useEffect(() => {
-        if (profileData)
+        if (profileData) {
             reset({
                 bio: profileData?.bio || "",
                 username: profileData?.username || "",
                 email: profileData?.email || "",
                 fullName: profileData?.fullName || "",
-                url: profileData?.avatar?.url || "",
             });
-    }, [profileData, reset, setIsEdit]);
+        }
+    }, [profileData, reset]);
 
-    const navigate=useNavigate();
+    const handleUpdate = async (formData) => {
+        setSubmitError("");
+        const updateData = new FormData();
+        const fields = ["fullName", "email", "username", "bio"];
 
-    const handleUpdate = async (data) => {
-        // try {
-        //     // let updatedData = { ...data };
-        //     // const file = data.image?.[0] || null;
-        //     // if (file) {
-        //     //     if (profile?.avatarId)
-        //     //         await profileService.delImage(profile.avatarId);
-        //     //     const imageRes = await profileService.uplodeImage(file);
-        //     //     updatedData.avatarId = imageRes.$id;
-        //     // }
-        //     // await profileService.updateProfile(profile.$id, updatedData);
-        //     setIsEdit(false);
-        //     navigate(`/profile/${slug}`);
-        // } catch (err) {
-        //     console.error(err);
-        //     setError("Update failed");
-        // }
+        fields.forEach((field) => {
+            const nextValue = formData[field]?.trim() ?? "";
+            const currentValue = profileData?.[field] ?? "";
+
+            if (nextValue !== currentValue) {
+                updateData.append(field, nextValue);
+            }
+        });
+
+        const avatar = formData.image?.[0];
+        if (avatar) updateData.append("avatar", avatar);
+
+        if ([...updateData.keys()].length === 0) {
+            setSubmitError("Make a change before updating your profile.");
+            return;
+        }
+
+        try {
+            const response = await updateAccountDetails(updateData);
+            onProfileUpdated(response.data);
+            toast.success(response.message || "Profile updated successfully.");
+            setIsEdit(false);
+        } catch (error) {
+            setSubmitError(error.message || "Failed to update profile.");
+        }
     };
 
+    const avatarUrl = profileData?.avatar?.url || "";
+
     return (
-        <div className="max-w-xs w-full mx-auto mt-2 p-6  flex flex-col items-center text-center ">
+        <div className="max-w-xs w-full mx-auto mt-2 p-6 flex flex-col items-center text-center">
             <form
                 onSubmit={handleSubmit(handleUpdate)}
                 className="w-full flex flex-col items-center gap-4"
             >
                 <label htmlFor="avatarUpload" className="cursor-pointer">
-                    <div className="relative w-54 h-54 rounded-full overflow-hidden border-2 border-[#0891B2]">
-                        <img
-                            className="w-full h-full object-cover"
-                            src={profileData?.avatar?.url}
-                            alt={profileData.username}
-                        />
+                    <div className="relative w-54 h-54 rounded-full overflow-hidden border-2 border-[#0891B2] bg-[#f5f5f5]">
+                        {avatarUrl ? (
+                            <img
+                                className="w-full h-full object-cover"
+                                src={avatarUrl}
+                                alt={profileData?.username || "profile"}
+                            />
+                        ) : (
+                            <div className="w-full h-full flex items-center justify-center text-3xl font-semibold text-[#0891B2]">
+                                {(
+                                    profileData?.fullName ||
+                                    profileData?.username ||
+                                    "U"
+                                )
+                                    .charAt(0)
+                                    .toUpperCase()}
+                            </div>
+                        )}
                         <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
                             <span className="text-xs text-white font-medium">
                                 Change
@@ -70,56 +108,67 @@ const EditProfileForm = ({ profileData, setIsEdit }) => {
                     {...register("image")}
                 />
 
-                <div className="w-full">
-                    <label className="block mb-1">Name</label>
+                {submitError && (
+                    <p className="w-full text-sm text-red-500">{submitError}</p>
+                )}
+
+                <FormField label="Name">
                     <input
+                        id="fullName"
                         type="text"
-                        className="w-full"
+                        className={inputClass}
                         {...register("fullName")}
                     />
-                </div>
+                </FormField>
+                {profileData?.isVerified ? (
+                    <p className="mt-3 text-sm text-[#666]">
+                        Email: {profileData.email}
+                    </p>
+                ) : (
+                    <FormField label="Email">
+                        <input
+                            id="email"
+                            type="email"
+                            className={inputClass}
+                            {...register("email")}
+                        />
+                    </FormField>
+                )}
 
-               {profileData.isVerified?null: <div className="w-full">
-                    <label className="block mb-1">Email</label> 
+                <FormField label="Username">
                     <input
-                        type="email"
-                        className="w-full"
-                        {...register("email")}
-                    />
-                </div>}
-
-                <div className="w-full">
-                    <label className="block mb-1">Username</label>
-                    <input
+                        id="username"
                         type="text"
-                        className="w-full"
+                        className={inputClass}
                         {...register("username")}
                     />
-                </div>
-                <div className="w-full ">
-                     <button
-                        type="button"
-                        onClick={()=>navigate('/update-Password')}
-                        className="flex-1 cursor-pointer p-1.5 text-sm bg-[#111] text-white rounded-lg font-medium hover:bg-[#333] transition-colors"
-                    >
-                        update Password
-                    </button>
-                </div>
-                
+                </FormField>
+
                 <textarea
                     placeholder="Update your bio..."
-                    className="w-full bg-[#FAF9F6] border border-[#e0ddd8] text-[#111] text-sm p-2.5 rounded-lg focus:outline-none focus:border-[#0891B2] resize-none"
+                    className={`${inputClass} bg-[#FAF9F6] resize-none`}
                     rows={3}
                     {...register("bio")}
                 />
+                <div className="w-full">
+                    <button
+                        type="button"
+                        onClick={() => navigate("/update-password")}
+                        className="text-[#0891B2] cursor-pointer hover:underline font-sm"
+                    >
+                        Change Password
+                    </button>
+                </div>
 
                 <div className="flex gap-3 w-full">
                     <button
                         type="submit"
+                        disabled={isSubmitting}
                         className="flex-1 py-1.5 text-sm bg-[#111] text-white rounded-lg font-medium hover:bg-[#333] transition-colors"
                     >
-                        Update
+                        {isSubmitting ? "Updating..." : "Update"}
                     </button>
+
                     <button
                         type="button"
                         onClick={() => setIsEdit(false)}

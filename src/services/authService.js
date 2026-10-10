@@ -1,18 +1,10 @@
 import api from "../api.js";
 import { apiHandler } from "../utils/apiHandler.js";
 
-// export const signupUser = async (signupData) => {
-//     try {
-//         const response = await api.post("/auth/register", signupData);
-
-//         return response.data;
-//     } catch (error) {
-//         handleApiError(error);
-//     }
-// };
-
 export const signupUser = (signupData) =>
     apiHandler(() => api.post("/auth/register", signupData));
+export const refreshToken = () =>
+    apiHandler(() => api.post("/auth/refresh-token"));
 
 export const getCurrentUser = () => apiHandler(() => api.get("/auth/me"));
 

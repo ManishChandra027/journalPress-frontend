@@ -1,56 +1,60 @@
-import api from "../api";
+﻿import api from "../api";
 import { apiHandler } from "../utils/apiHandler";
 
-export const getPublishedBlogs = () => apiHandler(() => api.get("/blogs"));
+export const getPublishedPosts = () => apiHandler(() => api.get("/posts"));
 
-export const createBlog = (blogData) =>
-    apiHandler(() => api.post("/blogs/", blogData));
+export const createPost = (postData) =>
+    apiHandler(() => api.post("/posts/", postData));
 
-export const getMyBlogs = (query) =>
+export const getMyPosts = (query) =>
     apiHandler(() =>
-        api.get("/blogs/me", {
-            params: query,
+        api.get("/posts/me", {
+             params:query,
         })
     );
 
-export const restoreAllBlogs = () =>
-    apiHandler(() => api.patch("/blogs/me/restore-all"));
+export const restoreAllPosts = () =>
+    apiHandler(() => api.patch("/posts/me/restore-all"));
 
-export const softDeleteAllBlogs = () =>
-    apiHandler(() => api.delete("/blogs/me/delete-all"));
+export const softDeleteAllPosts = () =>
+    apiHandler(() => api.delete("/posts/me/delete-all"));
 
-export const updateBlog = (blogData, id) =>
-    apiHandler(() => api.patch(`/blogs/id/${id}`, blogData));
+export const updatePost = (postData, id) =>
+    apiHandler(() => api.patch(`/posts/id/${id}`, postData));
 
-export const softDeleteBlog = (id) =>
-    apiHandler(() => api.delete(`/blogs/id/${id}`));
+export const softDeletePost = (id) =>
+    apiHandler(() => api.delete(`/posts/id/${id}`));
 
-export const restoreBlog = (id) =>
-    apiHandler(() => api.patch(`/blogs/me/${id}/restore`));
+export const restorePost = (id) =>
+    apiHandler(() => api.patch(`/posts/me/${id}/restore`));
 
-export const updateBlogStatus = (statusData, id) =>
-    apiHandler(() => api.patch(`/blogs/${id}/status`, statusData));
+export const updatePostStatus = (statusData, id) =>
+    apiHandler(() => api.patch(`/posts/${id}/status`, statusData));
 
-export const updateComment = (blogId, commentId, commentData) =>
+export const updateComment = (postId, commentId, commentData) =>
     apiHandler(() =>
-        api.patch(`/blogs/${blogId}/comments/${commentId}`, commentData)
+        api.patch(`/posts/${postId}/comments/${commentId}`, commentData)
     );
-export const deleteComment = (blogId, commentId) =>
-    apiHandler(() => api.delete(`/blogs/${blogId}/comments/${commentId}`));
-export const addComment = (blogId, commentData) =>
-    apiHandler(() => api.post(`/blogs/${blogId}/comments`, commentData));
+export const deleteComment = (postId, commentId) =>
+    apiHandler(() => api.delete(`/posts/${postId}/comments/${commentId}`));
+export const addComment = (postId, commentData) =>
+    apiHandler(() => api.post(`/posts/${postId}/comments`, commentData));
 
-export const getComments = (blogId) =>
-    apiHandler(() => api.get(`/blogs/${blogId}/comments`));
+export const getComments = (postId) =>
+    apiHandler(() => api.get(`/posts/${postId}/comments`));
 
-export const toggleLikeBlog = (blogId) =>
-    apiHandler(() => api.post(`/blogs/${blogId}/like`));
+export const toggleLikePost = (postId) =>
+    apiHandler(() => api.post(`/posts/${postId}/like`));
 
-export const toggleBookmarkBlog = (blogId) =>
-    apiHandler(() => api.post(`/blogs/${blogId}/bookmark`));
+export const toggleBookmarkPost = (postId) =>
+    apiHandler(() => api.post(`/posts/${postId}/bookmark`));
 
-export const getBlogBySlug = (slug) =>
-    apiHandler(() => api.get(`/blogs/slug/${slug}`));
+export const getPostBySlug = (slug) =>
+    apiHandler(() => api.get(`/posts/slug/${slug}`));
 
 export const getFeaturedPost = () =>
-    apiHandler(() => api.get(`/blogs/featured`));
+    apiHandler(() => api.get(`/posts/featured`));
+
+export const checkPostLiked = (postId) =>
+    apiHandler(() => api.get(`/posts/${postId}/liked`));
+

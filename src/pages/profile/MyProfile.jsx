@@ -1,18 +1,14 @@
-import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import {
-    getCurrentUserProfile,
-    getUserPublicProfile,
-} from "../../services/userService";
+﻿import { useContext, useEffect, useState } from "react";
+import { getCurrentUserProfile } from "../../services/userService";
 import Profile from "../../components/profile/Profile";
+import { PostContext } from "../../context/PostContext";
+import Spinner from "../../components/ui/Spinner";
 
 const MyProfile = () => {
     const isAuthor = true;
-
-    // const navigate = useNavigate();
-
     const [error, setError] = useState("");
     const [profileData, setProfileData] = useState(null);
+    const { setUserData } = useContext(PostContext);
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -22,28 +18,44 @@ const MyProfile = () => {
                 if (res) {
                     setProfileData(res.data);
                 }
-            } catch (error) {
-                console.log(error.message);
-                setError(error.message);
+            } catch (err) {
+                console.error(err);
+                setError(
+                    err.message || "Unable to load your profile right now."
+                );
             }
         };
-        fetchProfile()
+        fetchProfile();
     }, []);
 
-    if (error)
+    if (error) {
         return (
             <div className="min-h-screen flex items-center justify-center">
                 <p className="text-sm text-red-500">{error}</p>
             </div>
         );
+    }
 
-    if (!profileData)
+    if (!profileData) {
         return (
             <div className="min-h-screen flex items-center justify-center">
-                <div className="w-7 h-7 border-2 border-[#e8e6e1] border-t-[#0891B2] rounded-full animate-spin" />
+                <Spinner size="lg" />
             </div>
         );
-    return <Profile profileData={profileData} isAuthor={isAuthor}/>;
+    }
+
+    const handleProfileUpdated = (updatedProfile) => {
+        setProfileData(updatedProfile);
+        setUserData(updatedProfile);
+    };
+
+    return (
+        <Profile
+            profileData={profileData}
+            isAuthor={isAuthor}
+            onProfileUpdated={handleProfileUpdated}
+        />
+    );
 };
 
 export default MyProfile;

@@ -1,29 +1,27 @@
-import React, { useContext, useEffect, useState } from "react";
+﻿import { useContext, useMemo, useState } from "react";
 import { NavLink, useNavigate } from "react-router";
-import { BlogContext } from "../../context/BlogContext";
-import { getCurrentUser } from "../../services/authService";
+import { PostContext } from "../../context/PostContext";
 import Logo from "../logo/Logo";
 import LogoutBtn from "../auth/LogoutBtn";
+import Avatar from "../ui/Avatar";
 
 const Header = () => {
-    const { status, userData } = useContext(BlogContext);
+    const { status, userData } = useContext(PostContext);
     const authStatus = status;
-    const [profile, setProfile] = useState(null);
     const [menuOpen, setMenuOpen] = useState(false);
     const navigate = useNavigate();
 
-    useEffect(() => {
-        setProfile(userData);
-    }, [userData]);
-    // console.log(profile);
-
-    const navItem = [
-        { name: "Home", slug: "/", isActive: true },
-        { name: "Login", slug: "/login", isActive: !authStatus },
-        { name: "Signup", slug: "/signup", isActive: !authStatus },
-        { name: "Add Post", slug: "/add-post", isActive: authStatus },
-        { name: "My Posts", slug: "/my-post", isActive: authStatus },
-    ];
+    const profile = userData;
+    const navItem = useMemo(
+        () => [
+            { name: "Home", slug: "/", isActive: true },
+            { name: "Login", slug: "/login", isActive: !authStatus },
+            { name: "Signup", slug: "/signup", isActive: !authStatus },
+            { name: "Add Post", slug: "/add-post", isActive: authStatus },
+            { name: "My Posts", slug: "/my-post", isActive: authStatus },
+        ],
+        [authStatus]
+    );
 
     const activeItems = navItem.filter((item) => item.isActive);
 
@@ -68,19 +66,11 @@ const Header = () => {
                                 className="flex items-center gap-2 cursor-pointer"
                                 onClick={() => navigate(`/profile/me`)}
                             >
-                                {profile?.avatar ? (
-                                    <img
-                                        src={profile.avatar?.url}
-                                        className="w-7 h-7 rounded-full object-cover"
-                                        alt={profile?.username}
-                                    />
-                                ) : (
-                                    <div className="w-7 h-7 rounded-full bg-[#0891B2] text-white text-xs font-medium flex items-center justify-center">
-                                        {profile?.fullName
-                                            ?.charAt(0)
-                                            .toUpperCase()}
-                                    </div>
-                                )}
+                                <Avatar
+                                    user={profile}
+                                    size="md"
+                                    className="w-7 h-7"
+                                />
                                 <span className="text-sm text-[#666] hover:text-[#111] transition-colors">
                                     {userData?.fullName}
                                 </span>
@@ -94,23 +84,13 @@ const Header = () => {
                         {authStatus && (
                             <div
                                 className="cursor-pointer"
-                                onClick={() =>
-                                    navigate(`/profile/me`)
-                                }
+                                onClick={() => navigate(`/profile/me`)}
                             >
-                                {profile?.avatar ? (
-                                    <img
-                                        src={profile.avatar?.url}
-                                        className="w-7 h-7 rounded-full object-cover"
-                                        alt={profile?.fullName}
-                                    />
-                                ) : (
-                                    <div className="w-7 h-7 rounded-full bg-[#0891B2] text-white text-xs font-medium flex items-center justify-center">
-                                        {profile?.fullName
-                                            ?.charAt(0)
-                                            .toUpperCase()}
-                                    </div>
-                                )}
+                                <Avatar
+                                    user={profile}
+                                    size="md"
+                                    className="w-7 h-7"
+                                />
                             </div>
                         )}
                         <button
